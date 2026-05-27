@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giacominovaipianino official websitino</title>
+  <meta name="description" content="Il miglior serviziettino di riparazioncina computerini dal 1987. Giacomino sistema tutto in un attimino." />
+
+  <!-- Google Fonts: VT323 (retro pixel) + Courier Prime (mono leggibile) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Press+Start+2P&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       VARIABILI & RESET
+       ============================================================ */
+    :root {
+      --neon-cyan:    #00f5ff;
+      --neon-green:   #39ff14;
+      --neon-pink:    #ff2d9b;
+      --neon-yellow:  #ffe600;
+      --deep-black:   #050a0e;
+      --dark-navy:    #0a1628;
+      --dark-panel:   #0d1f35;
+      --mid-panel:    #112240;
+      --border-glow:  #00f5ff44;
+      --text-main:    #c8e8f0;
+      --text-dim:     #5a8fa0;
+      --scanline-opacity: 0.04;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--deep-black);
+      color: var(--text-main);
+      font-family: 'Courier Prime', monospace;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ============================================================
+       SCANLINES GLOBALI (overlay fisso)
+       ============================================================ */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0, var(--scanline-opacity)) 2px,
+        rgba(0,0,0, var(--scanline-opacity)) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ============================================================
+       GRIGLIA RETRÒ DI SFONDO
+       ============================================================ */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ============================================================
+       NAVBAR
+       ============================================================ */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(5,10,14,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-glow);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .nav-logo {
+      font-family: 'VT323', monospace;
+      font-size: 1.6rem;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan);
+      letter-spacing: 2px;
+      white-space: nowrap;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color 0.2s, text-shadow 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--neon-cyan);
+      text-shadow: 0 0 8px var(--neon-cyan);
+    }
+
+    .nav-badge {
+      background: var(--neon-green);
+      color: #000;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      padding: 4px 8px;
+      border-radius: 2px;
+      white-space: nowrap;
+      animation: badge-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes badge-pulse {
+      0%, 100% { box-shadow: 0 0 4px var(--neon-green); }
+      50%       { box-shadow: 0 0 12px var(--neon-green), 0 0 24px var(--neon-green); }
+    }
+
+    /* ============================================================
+       HERO
+       ============================================================ */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 24px 60px;
+      overflow: hidden;
+    }
+
+    /* Griglia prospettica in basso */
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: -20%;
+      width: 140%;
+      height: 300px;
+      background:
+        linear-gradient(rgba(0,245,255,0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,255,0.12) 1px, transparent 1px);
+      background-size: 60px 60px;
+      transform: perspective(400px) rotateX(60deg);
+      transform-origin: bottom center;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 900px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* CRT acceso in alto */
+    .hero-crt-badge {
+      display: inline-block;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55rem;
+      color: var(--neon-green);
+      border: 1px solid var(--neon-green);
+      padding: 6px 14px;
+      margin-bottom: 28px;
+      letter-spacing: 2px;
+      animation: crt-blink 1.4s step-end infinite;
+    }
+
+    @keyframes crt-blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    /* Logo principale */
+    .hero-logo {
+      font-family: 'VT323', monospace;
+      font-size: clamp(2.8rem, 8vw, 6rem);
+      color: var(--neon-cyan);
+      text-shadow:
+        0 0 10px var(--neon-cyan),
+        0 0 30px var(--neon-cyan),
+        0 0 60px rgba(0,245,255,0.4);
+      line-height: 1;
+      margin-bottom: 8px;
+      animation: logo-flicker 8s ease-in-out infinite;
+    }
+
+    @keyframes logo-flicker {
+      0%, 90%, 100% { opacity: 1; }
+      92%           { opacity: 0.85; }
+      94%           { opacity: 1; }
+      96%           { opacity: 0.7; }
+      98%           { opacity: 1; }
+    }
+
+    .hero-subtitle-tag {
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.72rem;
+      color: var(--neon-pink);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    /* Immagini mockup retro */
+    .hero-images {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+    }
+
+    .hero-img-box {
+      width: 110px;
+      height: 90px;
+      border: 2px solid var(--border-glow);
+      background: var(--dark-panel);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+      flex-shrink: 0;
+    }
+
+    .hero-img-box:hover {
+      border-color: var(--neon-cyan);
+      transform: translateY(-4px);
+      box-shadow: 0 0 20px rgba(0,245,255,0.3);
+    }
+
+    .hero-img-box::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0,0,0,0.15) 3px,
+        rgba(0,0,0,0.15) 4px
+      );
+      pointer-events: none;
+    }
+
+    /* Etichetta sotto immagine */
+    .hero-img-label {
+      position: absolute;
+      bottom: 4px;
+      left: 0; right: 0;
+      text-align: center;
+      font-family: 'VT323', monospace;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+    }
+
+    /* Testo principale hero */
+    .hero-headline {
+      font-family: 'VT323', monospace;
+      font-size: clamp(1.6rem, 4.5vw, 2.6rem);
+      color: #fff;
+      text-shadow: 0 0 8px rgba(255,255,255,0.3);
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+
+    .hero-headline span {
+      color: var(--neon-yellow);
+      text-shadow: 0 0 10px var(--neon-yellow);
+    }
+
+    .hero-desc {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      margin-bottom: 40px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Pulsante CTA */
+    .btn-cta {
+      display: inline-block;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.7rem;
+      padding: 18px 36px;
+      background: transparent;
+      color: var(--neon-cyan);
+      border: 2px solid var(--neon-cyan);
+      cursor: pointer;
+      text-decoration: none;
+      letter-spacing: 2px;
+      position: relative;
+      overflow: hidden;
+      transition: color 0.3s, background 0.3s;
+      text-transform: uppercase;
+    }
+
+    .btn-cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--neon-cyan);
+      transform: translateX(-101%);
+      transition: transform 0.3s ease;
+      z-index: -1;
+    }
+
+    .btn-cta:hover {
+      color: #000;
+      box-shadow: 0 0 24px var(--neon-cyan), 0 0 48px rgba(0,245,255,0.3);
+    }
+
+    .btn-cta:hover::before { transform: translateX(0); }
+
+    /* Indicatore scroll */
+    .scroll-hint {
+      margin-top: 56px;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      animation: bounce-y 1.6s ease-in-out infinite;
+    }
+
+    @keyframes bounce-y {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(6px); }
+    }
+
+    /* ============================================================
+       STATS BAR
+       ============================================================ */
+    .stats-bar {
+      position: relative;
+      z-index: 1;
+      background: var(--dark-panel);
+      border-top: 1px solid var(--border-glow);
+      border-bottom: 1px solid var(--border-glow);
+      padding: 28px 24px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 16px 32px;
+      border-right: 1px solid var(--border-glow);
+      flex: 1 1 160px;
+      max-width: 220px;
+    }
+
+    .stat-item:last-child { border-right: none; }
+
+    .stat-number {
+      font-family: 'VT323', monospace;
+      font-size: 2.6rem;
+      color: var(--neon-green);
+      text-shadow: 0 0 12px var(--neon-green);
+      display: block;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ============================================================
+       SECTION GENERICA
+       ============================================================ */
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 80px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-tag {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      color: var(--neon-pink);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .section-title {
+      font-family: 'VT323', monospace;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    .section-title .accent { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); }
+
+    .section-desc {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      max-width: 560px;
+      margin-bottom: 48px;
+    }
+
+    /* ============================================================
+       SERVIZI / FEATURE CARDS
+       ============================================================ */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--dark-panel);
+      border: 1px solid var(--border-glow);
+      padding: 28px 24px;
+      position: relative;
+      transition: border-color 0.3s, transform 0.3s;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--neon-cyan);
+      box-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    .feature-card:hover {
+      border-color: var(--neon-cyan);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0,245,255,0.1);
+    }
+
+    .feature-icon {
+      font-size: 2.2rem;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .feature-title {
+      font-family: 'VT323', monospace;
+      font-size: 1.4rem;
+      color: var(--neon-cyan);
+      margin-bottom: 8px;
+    }
+
+    .feature-text {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .feature-badge {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 0.62rem;
+      background: rgba(0,245,255,0.08);
+      border: 1px solid var(--border-glow);
+      color: var(--neon-cyan);
+      padding: 3px 8px;
+      letter-spacing: 1px;
+    }
+
+    /* ============================================================
+       TIMELINE
+       ============================================================ */
+    .timeline-section { background: var(--dark-navy); }
+
+    .timeline {
+      position: relative;
+      max-width: 700px;
+      margin: 0 auto;
+      padding-left: 32px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--neon-cyan), var(--neon-pink), var(--neon-green));
+      box-shadow: 0 0 8px var(--neon-cyan);
+    }
+
+    .tl-item {
+      position: relative;
+      margin-bottom: 40px;
+      padding-left: 24px;
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .tl-item.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .tl-dot {
+      position: absolute;
+      left: -38px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--neon-cyan);
+      box-shadow: 0 0 8px var(--neon-cyan);
+      border: 2px solid var(--dark-navy);
+    }
+
+    .tl-year {
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      color: var(--neon-pink);
+      text-shadow: 0 0 6px var(--neon-pink);
+      letter-spacing: 2px;
+    }
+
+    .tl-title {
+      font-family: 'Courier Prime', monospace;
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.92rem;
+      margin-bottom: 4px;
+    }
+
+    .tl-text {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    /* ============================================================
+       TECNOLOGIA BREVETTATA
+       ============================================================ */
+    .patent-box {
+      background: var(--dark-panel);
+      border: 1px solid var(--neon-yellow);
+      box-shadow: 0 0 20px rgba(255,230,0,0.1);
+      padding: 36px 32px;
+      max-width: 680px;
+      margin: 0 auto;
+      text-align: center;
+      position: relative;
+    }
+
+    .patent-box::before,
+    .patent-box::after {
+      content: '◆◆◆';
+      display: block;
+      font-size: 0.7rem;
+      color: var(--neon-yellow);
+      letter-spacing: 8px;
+      margin-bottom: 12px;
+    }
+
+    .patent-box::after { margin-top: 12px; margin-bottom: 0; }
+
+    .patent-title {
+      font-family: 'VT323', monospace;
+      font-size: 2rem;
+      color: var(--neon-yellow);
+      text-shadow: 0 0 12px var(--neon-yellow);
+      margin-bottom: 8px;
+    }
+
+    .patent-text {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      max-width: 480px;
+      margin: 0 auto 20px;
+    }
+
+    .patent-number {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.5rem;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+    }
+
+    /* ============================================================
+       RECENSIONI
+       ============================================================ */
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .review-card {
+      background: var(--dark-panel);
+      border: 1px solid var(--border-glow);
+      padding: 24px 22px;
+      position: relative;
+      transition: border-color 0.3s;
+    }
+
+    .review-card:hover { border-color: var(--neon-pink); }
+
+    .review-stars {
+      color: var(--neon-yellow);
+      font-size: 1rem;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    .review-text {
+      font-size: 0.83rem;
+      color: var(--text-main);
+      line-height: 1.6;
+      margin-bottom: 16px;
+      font-style: italic;
+    }
+
+    .review-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .review-avatar {
+      width: 36px;
+      height: 36px;
+      background: var(--mid-panel);
+      border: 1px solid var(--border-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .review-name {
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      color: var(--neon-cyan);
+    }
+
+    .review-location {
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+    }
+
+    .review-verified {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-size: 0.55rem;
+      color: var(--neon-green);
+      letter-spacing: 1px;
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    /* ============================================================
+       CHAT WIDGET
+       ============================================================ */
+    #chat-section {
+      background: var(--dark-navy);
+      padding: 80px 24px;
+    }
+
+    #chat-section .inner {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .chat-window {
+      background: var(--deep-black);
+      border: 1px solid var(--neon-cyan);
+      box-shadow: 0 0 24px rgba(0,245,255,0.15);
+      display: flex;
+      flex-direction: column;
+      height: 460px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* barra del titolo stile CRT */
+    .chat-titlebar {
+      background: var(--dark-panel);
+      border-bottom: 1px solid var(--border-glow);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .chat-titlebar-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-red    { background: #ff5f57; }
+    .dot-yellow { background: #febc2e; }
+    .dot-green  { background: #28c840; }
+
+    .chat-titlebar-label {
+      flex: 1;
+      text-align: center;
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+    }
+
+    .chat-online-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.65rem;
+      color: var(--neon-green);
+    }
+
+    .online-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--neon-green);
+      box-shadow: 0 0 6px var(--neon-green);
+      animation: online-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes online-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%       { transform: scale(1.3); opacity: 0.6; }
+    }
+
+    /* messaggi */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 2px; }
+
+    .msg {
+      max-width: 80%;
+      animation: msg-appear 0.3s ease;
+    }
+
+    @keyframes msg-appear {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg.bot { align-self: flex-start; }
+    .msg.user { align-self: flex-end; }
+
+    .msg-bubble {
+      padding: 10px 14px;
+      font-size: 0.84rem;
+      line-height: 1.5;
+      border-radius: 0;
+    }
+
+    .msg.bot .msg-bubble {
+      background: var(--dark-panel);
+      border: 1px solid var(--border-glow);
+      color: var(--text-main);
+      border-top-left-radius: 0;
+    }
+
+    .msg.user .msg-bubble {
+      background: rgba(0,245,255,0.12);
+      border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+    }
+
+    .msg-name {
+      font-family: 'VT323', monospace;
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+      letter-spacing: 1px;
+    }
+
+    .msg.bot .msg-name { color: var(--neon-pink); }
+    .msg.user .msg-name { color: var(--text-dim); text-align: right; }
+
+    .msg-time {
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .msg.user .msg-time { text-align: right; }
+
+    /* typing indicator */
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 14px;
+      background: var(--dark-panel);
+      border: 1px solid var(--border-glow);
+      width: fit-content;
+      max-width: 80px;
+    }
+
+    .typing-indicator.show { display: flex; }
+
+    .typing-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--neon-cyan);
+      animation: typing-bounce 1.2s ease-in-out infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing-bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40%           { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* input */
+    .chat-input-area {
+      border-top: 1px solid var(--border-glow);
+      padding: 12px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: var(--dark-panel);
+      border: 1px solid var(--border-glow);
+      color: var(--text-main);
+      font-family: 'Courier Prime', monospace;
+      font-size: 0.84rem;
+      padding: 10px 14px;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+      min-height: 42px;
+      max-height: 100px;
+    }
+
+    .chat-input:focus { border-color: var(--neon-cyan); }
+    .chat-input::placeholder { color: var(--text-dim); }
+
+    .chat-send-btn {
+      background: var(--neon-cyan);
+      color: #000;
+      border: none;
+      padding: 10px 18px;
+      cursor: pointer;
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      transition: background 0.2s, box-shadow 0.2s;
+      white-space: nowrap;
+    }
+
+    .chat-send-btn:hover {
+      background: #00e0eb;
+      box-shadow: 0 0 14px var(--neon-cyan);
+    }
+
+    /* nota orario */
+    .chat-note {
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-top: 14px;
+      letter-spacing: 1px;
+    }
+
+    /* ============================================================
+       FIREBASE CONFIG BOX (nascosta per default, toggle via JS)
+       ============================================================ */
+    .firebase-setup {
+      display: none;  /* mostrala solo in modalità dev/admin */
+      background: var(--dark-panel);
+      border: 1px dashed var(--neon-yellow);
+      padding: 20px;
+      margin-top: 24px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border-glow);
+      background: var(--dark-panel);
+      padding: 40px 24px;
+      text-align: center;
+    }
+
+    .footer-logo {
+      font-family: 'VT323', monospace;
+      font-size: 2rem;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 10px var(--neon-cyan);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .footer-tagline {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      list-style: none;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .footer-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--neon-cyan); }
+
+    .footer-copy {
+      font-size: 0.65rem;
+      color: #2a3d4d;
+      letter-spacing: 1px;
+    }
+
+    /* ============================================================
+       UTILITIES
+       ============================================================ */
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border-glow), transparent);
+      margin: 0;
+    }
+
+    .text-center { text-align: center; }
+
+    /* Separatore sezione con glow */
+    .section-full {
+      max-width: 100%;
+      padding: 80px 24px;
+    }
+
+    .section-full .inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      .stat-item { border-right: none; border-bottom: 1px solid var(--border-glow); }
+      .stat-item:last-child { border-bottom: none; }
+      .hero-images { gap: 10px; }
+      .hero-img-box { width: 80px; height: 70px; font-size: 1.8rem; }
+      .timeline { padding-left: 24px; }
+      .tl-dot { left: -28px; }
+    }
+  </style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav>
+  <span class="nav-logo">GIACOMINO</span>
+  <ul class="nav-links">
+    <li><a href="#servizi">Servizini</a></li>
+    <li><a href="#storia">Storiellina</a></li>
+    <li><a href="#recensioni">Recensioncine</a></li>
+    <li><a href="#chat-section">Contattini</a></li>
+  </ul>
+  <span class="nav-badge">▶ APERTINO</span>
+</nav>
+
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<header class="hero">
+  <div class="hero-inner">
+
+    <span class="hero-crt-badge">▌ SISTEMA OPERATIVO GIACOMINO v3.7 ▐</span>
+
+    <h1 class="hero-logo">Giacominovaipianino</h1>
+    <p class="hero-subtitle-tag">Assistenza Informatica Artigianalina E Consulenza Online · Est. 1987</p>
+
+    <!-- Immagini emoji retro (stock-free, compatibili ovunque) -->
+    <div class="hero-images">
+      <div class="hero-img-box">
+        🖥️
+        <span class="hero-img-label">MODELLINO 386</span>
+      </div>
+      <div class="hero-img-box">
+        💾
+        <span class="hero-img-label">3.5 FDD</span>
+      </div>
+      <div class="hero-img-box">
+        ⌨️
+        <span class="hero-img-label">IBM CLASSIC</span>
+      </div>
+      <div class="hero-img-box">
+        👨‍💻
+        <span class="hero-img-label">GIACOMINO</span>
+      </div>
+      <div class="hero-img-box">
+        🖨️
+        <span class="hero-img-label">STAMPANTINA</span>
+      </div>
+    </div>
+
+    <h2 class="hero-headline">
+      ciao amico carino, sono <span>Giacomino</span><br/>
+      e ti riparo il computerino<br/>in un <span>attimino</span>.
+    </h2>
+
+    <p class="hero-desc">
+      Dal 1987, sistemo computerini, giochini,
+      tastierine, schermatine e aggiungiamo RAM-ina a tutto.
+      Tecnologia brevettatina. Garanzia morale.
+    </p>
+
+    <a href="#chat-section" class="btn-cta">▶ Parla col robottino</a>
+
+    <p class="scroll-hint">▼ scorri per sapere tutto ▼</p>
+  </div>
+</header>
+
+
+<!-- ============================================================
+     STATS BAR
+     ============================================================ -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-number" data-target="4982" data-suffix="">0</span>
+    <span class="stat-label">computerini salvati</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-number" data-target="37" data-suffix="">0</span>
+    <span class="stat-label">anni di esperienza</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-number" data-target="99" data-suffix=".8%">0</span>
+    <span class="stat-label">problemini risoltini</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-number" data-target="180" data-suffix="min">0</span>
+    <span class="stat-label">tempo medio rispostine</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-number" data-target="1" data-suffix=" brevetto">0</span>
+    <span class="stat-label">tecnologia unica</span>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+
+<!-- ============================================================
+     SERVIZI
+     ============================================================ -->
+<section id="servizi">
+  <span class="section-tag">// i nostri servizi</span>
+  <h2 class="section-title">Cosa <span class="accent">aggiustiamo</span> noi</h2>
+  <p class="section-desc">
+    Dalla tastierina che fa le bizze al giochino che non funziona —
+    Giacomino ha visto tutto. Due volte.
+  </p>
+
+  <div class="features-grid">
+
+    <div class="feature-card">
+      <span class="feature-icon">🦠</span>
+      <h3 class="feature-title">Virus e virusini</h3>
+      <p class="feature-text">
+        Rimozione completa di virus, viretti, malware, adware,
+        e di quella toolbar di Ask Jeeves che si reinstalla da sola ogni giovedì.
+      </p>
+      <span class="feature-badge">PROTOCOLLO GV-7</span>
+    </div>
+
+    <div class="feature-card">
+      <span class="feature-icon">🐌</span>
+      <h3 class="feature-title">Computerino lento</h3>
+      <p class="feature-text">
+        Ottimizzazione profonda del registro di sistema, defrag spirituale
+        e una preghierina al disco rigido per farlo andare più sveltino.
+      </p>
+      <span class="feature-badge">METODO SOFFIATA</span>
+    </div>
+
+    <div class="feature-card">
+      <span class="feature-icon">📡</span>
+      <h3 class="feature-title">Minecraft che non va</h3>
+      <p class="feature-text">
+        Diagnosi della connettività, aggiustamenti di file, controllo del cavo
+        e verifica i dati vengano gestiti correttamente.
+      </p>
+      <span class="feature-badge">TECNICA CRAFTINO</span>
+    </div>
+
+    <div class="feature-card">
+      <span class="feature-icon">💥</span>
+      <h3 class="feature-title">Schermo che fa storie</h3>
+      <p class="feature-text">
+        Risoluzione problemi schermino, diagnosi pixel morti e terapia
+        per monitor che mostrano solo una riga verde lampeggiante.
+      </p>
+      <span class="feature-badge">ANALISI VISIVA</span>
+    </div>
+
+    <div class="feature-card">
+      <span class="feature-icon">📂</span>
+      <h3 class="feature-title">File perduti e piangenti</h3>
+      <p class="feature-text">
+        Recupero dati da hard disk, chiavette misteriose,
+        CD graffiati e floppy da 5¼ trovati in cantina (sì, anche quelli).
+      </p>
+      <span class="feature-badge">RECUPERO MAGICO</span>
+    </div>
+
+    <div class="feature-card">
+      <span class="feature-icon">🖨️</span>
+      <h3 class="feature-title">Stampante bizzosa</h3>
+      <p class="feature-text">
+        Installiamo driver, sblocchiamo inceppamenti mitici e convinciamo
+        la stampante che SÌ, è connessa. Sì, anche quella HP del 2003.
+      </p>
+      <span class="feature-badge">PERSUASIONE DRIVER</span>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+<!-- ============================================================
+     TECNOLOGIA BREVETTATA
+     ============================================================ -->
+<section class="text-center" style="padding: 80px 24px;">
+  <div class="patent-box">
+    <h2 class="patent-title">⚙ Tecnologia Brevettatina ⚙</h2>
+    <p class="patent-text">
+      Il nostro esclusivo <strong>Metodo Giacomino™</strong> combina diagnostica
+      cibernetica avanzata, percussione terapeutica del case e soffio tecnico
+      calibrato sulle ventoline per risultati garantiti o i soldi rimangono lì dove sono.
+    </p>
+    <p class="patent-text">
+      Basato su <em>37 anni di esperienza empirica</em>, il Metodo Giacomino™
+      è riconosciuto da… noi stessi. Ma funziona.
+    </p>
+    <span class="patent-number">BREVETTO N° GV-1987-∞ · REGISTRATO MORALMENTE · TUTTI I DIRITTI RISERVATI A GIACOMINO</span>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+<!-- ============================================================
+     TIMELINE
+     ============================================================ -->
+<section id="storia" class="timeline-section section-full" style="padding: 80px 24px;">
+  <div class="inner">
+    <span class="section-tag">// la nostra storia</span>
+    <h2 class="section-title" style="margin-bottom: 48px;">
+      Dal garage al <span class="accent">globo</span>
+    </h2>
+
+    <div class="timeline">
+
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-year">1987</div>
+        <div class="tl-title">La Grande Fondazione</div>
+        <div class="tl-text">
+          Giacomino, 14 anni, smonta il primo Commodore 64 di suo cugino Peppino.
+          Lo rimonta quasi uguale. Peppino piange, ma poi va. Nasce un'idea.
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--neon-pink);box-shadow:0 0 8px var(--neon-pink)"></div>
+        <div class="tl-year">1993</div>
+        <div class="tl-title">Il Primo Windows</div>
+        <div class="tl-text">
+          Giacomino installa Windows 3.1 per 47 clienti di fila.
+          Crea il leggendario file AUTOEXEC.BAT che funziona sempre.
+          Apre uno sportello fisico nel corridoio di casa.
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--neon-yellow);box-shadow:0 0 8px var(--neon-yellow)"></div>
+        <div class="tl-year">1999</div>
+        <div class="tl-title">Il Bug del Millennio</div>
+        <div class="tl-text">
+          Giacomino veglia tutta la notte del 31 dicembre.
+          I computer non esplodono. Si prende il merito.
+          Fattura record: 3 milioni di lire in una settimana.
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--neon-green);box-shadow:0 0 8px var(--neon-green)"></div>
+        <div class="tl-year">2007</div>
+        <div class="tl-title">L'Espansione Digitale</div>
+        <div class="tl-text">
+          Apertura del servizio telefonico. Giacomino risponde sempre con voce
+          rassicurante e dice "hai spento e riacceso?" indipendentemente dal problema.
+          Funziona il 73% delle volte.
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-year">2015</div>
+        <div class="tl-title">Il Robottino</div>
+        <div class="tl-text">
+          Nasce il Robottino di Giacomino: un sistema di supporto via chat
+          che è fondamentalmente Giacomino che scrive con un dito solo
+          ma molto veloce.
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--neon-pink);box-shadow:0 0 8px var(--neon-pink)"></div>
+        <div class="tl-year">2024</div>
+        <div class="tl-title">Presente Glorioso</div>
+        <div class="tl-text">
+          4.982 computerini salvati. Un brevetto morale. Una dedica speciale
+          alla signora Rosina di Napoli il cui PC era in realtà spento dal 2021.
+          Avanti così.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+<!-- ============================================================
+     RECENSIONI
+     ============================================================ -->
+<section id="recensioni">
+  <span class="section-tag">// cosa dicono di noi</span>
+  <h2 class="section-title">Testimonianze <span class="accent">veritiere</span></h2>
+  <p class="section-desc">
+    Parole autentiche di clienti autentici. Non abbiamo pagato nessuno. Quasi.
+  </p>
+
+  <div class="reviews-grid">
+
+    <div class="review-card">
+      <span class="review-verified">✔ VERIFICATO</span>
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">
+        "Non riuscivo a connettermi al server di minecraft con gli amichetti,
+        Giacomino ha risolto tutto tramite consulenza online."
+      </p>
+      <div class="review-author">
+        <div class="review-avatar">👩</div>
+        <div>
+          <div class="review-name">Carlina</div>
+          <div class="review-location">Napoli · Cliente dal 2019</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="review-card">
+      <span class="review-verified">✔ VERIFICATO</span>
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">
+        "Avevo un virus che apriva da solo siti di ricette di cucina ogni tre ore.
+        Mia moglie pensava fossi io. Giacomino ha risolto tutto in meno di
+        dieci minuti e ha salvato il mio matrimonio. Sei stelle se potevo."
+      </p>
+      <div class="review-author">
+        <div class="review-avatar">👨</div>
+        <div>
+          <div class="review-name">Pippino</div>
+          <div class="review-location">Bari · Cliente dal 2021</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="review-card">
+      <span class="review-verified">✔ VERIFICATO</span>
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">
+        "Minecraft dava problemi di connettività,
+        Giacomino mi ha svelato che era un problema comune,
+        in qualche secondo con le sue tecniche segrete ha risolto tutto."
+      </p>
+      <div class="review-author">
+        <div class="review-avatar">👨‍🦲</div>
+        <div>
+          <div class="review-name">Totorino</div>
+          <div class="review-location">Roma · Cliente dal 2020</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="review-card">
+      <span class="review-verified">✔ VERIFICATO</span>
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">
+        "La stampante non stampava da Natale del 2018. Pensavo fosse rotta.
+        Giacomino ha guardato, ha detto 'è in pausa', ha cliccato un bottone.
+        Ho pianto. Davvero. Cinque stelle piene e una mezza stellina bonus."
+      </p>
+      <div class="review-author">
+        <div class="review-avatar">👩‍🦱</div>
+        <div>
+          <div class="review-name">Mariuccina</div>
+          <div class="review-location">Milano · Cliente dal 2018</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="review-card">
+      <span class="review-verified">✔ VERIFICATO</span>
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">
+        "Mi si era persa la cartella con trent'anni di foto di famiglia.
+        Giacomino l'ha ritrovata nel Cestino. Non avevo svuotato il Cestino.
+        Mai. Dal 1994. C'erano 47mila file. Li ho tenuti tutti. Grazie."
+      </p>
+      <div class="review-author">
+        <div class="review-avatar">👴</div>
+        <div>
+          <div class="review-name">Gennarino</div>
+          <div class="review-location">Palermo · Cliente dal 1994</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="review-card">
+      <span class="review-verified">✔ VERIFICATO</span>
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">
+        "Il robottino mi ha risposto in 4 minuti esatti, come promesso.
+        Ho cronometrato. È un genio oppure ha paura dell'orologio.
+        In ogni caso il problema era risolto prima che finissi di leggere
+        la risposta. Fenomenale davvero."
+      </p>
+      <div class="review-author">
+        <div class="review-avatar">👩‍💼</div>
+        <div>
+          <div class="review-name">Robertina</div>
+          <div class="review-location">Torino · Cliente dal 2022</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+
+<!-- ============================================================
+     CHAT SECTION
+     ============================================================ -->
+<section id="chat-section" class="section-full" style="padding: 80px 24px; max-width: 100%;">
+  <div class="inner" style="max-width: 680px; margin: 0 auto;">
+
+    <span class="section-tag">// supporto in tempo reale</span>
+    <h2 class="section-title" style="margin-bottom: 8px;">
+      Parla col <span class="accent">Robottino</span>
+    </h2>
+    <p class="section-desc">
+      Il robottino è presidiato da Giacomino in persona. Risposte garantite tra le 16:00 e le 17:00.
+    </p>
+
+    <div class="chat-window" id="chatWindow">
+
+      <!-- Barra titolo stile OS retro -->
+      <div class="chat-titlebar">
+        <div class="chat-titlebar-dot dot-red"></div>
+        <div class="chat-titlebar-dot dot-yellow"></div>
+        <div class="chat-titlebar-dot dot-green"></div>
+        <span class="chat-titlebar-label">ROBOTTINO DI GIACOMINO v2.4</span>
+        <div class="chat-online-badge">
+          <div class="online-dot"></div>
+          <span>ONLINE</span>
+        </div>
+      </div>
+
+      <!-- Messaggi -->
+      <div class="chat-messages" id="chatMessages">
+        <!-- Il messaggio di benvenuto viene iniettato da JS -->
+      </div>
+
+      <!-- Indicatore "sta scrivendo" -->
+      <div class="typing-indicator" id="typingIndicator" style="margin: 0 16px 8px;">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+
+      <!-- Input -->
+      <div class="chat-input-area">
+        <textarea
+          id="chatInput"
+          class="chat-input"
+          placeholder="scrivi qui il tuo problemino..."
+          rows="1"
+        ></textarea>
+        <button class="chat-send-btn" id="chatSendBtn">INVIA ▶</button>
+      </div>
+
+    </div>
+
+    <p class="chat-note">
+      ⏰ risposte garantite fra le 16:00 e le 17:00 · powered by Giacomino™
+    </p>
+
+  </div>
+</section>
+
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <span class="footer-logo">Giacominovaipianino</span>
+  <p class="footer-tagline">Assistenza Informatica Artigianale · Est. 1987</p>
+
+  <ul class="footer-links">
+    <li><a href="#servizi">Servizi</a></li>
+    <li><a href="#storia">La nostra storia</a></li>
+    <li><a href="#recensioni">Recensioni</a></li>
+    <li><a href="#chat-section">Contatta il robottino</a></li>
+  </ul>
+
+  <p class="footer-copy">
+    © 1987–2024 Giacominovaipianino · Tutti i diritti sono di Giacomino ·
+    Nessun computer è stato maltrattato nella produzione di questo sito ·
+    Tecnologia brevettata moralmente
+  </p>
+</footer>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+/* ================================================================
+   SEZIONE 1 — CHAT (Firebase Realtime Database)
+   ================================================================
+   COME FUNZIONA:
+   - L'utente scrive nella chat → il messaggio viene salvato su Firebase
+   - Tu (Giacomino) apri la Firebase Console → Realtime Database
+     e leggi i messaggi in tempo reale
+   - Per rispondere: aggiungi un nodo nella console OPPURE usa
+     il pannellino admin nascosto (leggi le istruzioni nel file README)
+   ================================================================ */
+
+  // ── CONFIGURAZIONE FIREBASE ──────────────────────────────────
+  // Sostituisci questi valori con i tuoi (vedi README.md per come farlo)
+  const FIREBASE_CONFIG = {
+    apiKey:            "INSERISCI_QUI_API_KEY",
+    authDomain:        "INSERISCI_QUI.firebaseapp.com",
+    databaseURL:       "https://INSERISCI_QUI-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId:         "INSERISCI_QUI",
+    storageBucket:     "INSERISCI_QUI.appspot.com",
+    messagingSenderId: "INSERISCI_QUI",
+    appId:             "INSERISCI_QUI"
+  };
+
+  // ── FLAG: modalità offline (fallback senza Firebase) ─────────
+  // Se non hai ancora configurato Firebase, la chat funziona comunque
+  // in modalità locale — i messaggi vengono salvati solo in memoria.
+  let USE_FIREBASE = false; // metti true dopo aver configurato Firebase
+
+  // ── ID conversazione univoco per sessione ────────────────────
+  const SESSION_ID = 'session_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+
+  // ── Riferimenti DOM ──────────────────────────────────────────
+  const messagesEl   = document.getElementById('chatMessages');
+  const inputEl      = document.getElementById('chatInput');
+  const sendBtn      = document.getElementById('chatSendBtn');
+  const typingEl     = document.getElementById('typingIndicator');
+
+  // ── Database Firebase (inizializzato solo se USE_FIREBASE=true) ──
+  let db = null;
+  let messagesRef = null;
+
+  /**
+   * Inizializza Firebase e mette in ascolto i messaggi
+   */
+  async function initFirebase() {
+    try {
+      // Importa Firebase via CDN dinamicamente
+      const { initializeApp }     = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+      const { getDatabase, ref, push, onChildAdded, serverTimestamp }
+        = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+
+      const app = initializeApp(FIREBASE_CONFIG);
+      db = getDatabase(app);
+      messagesRef = ref(db, 'chats/' + SESSION_ID + '/messages');
+
+      // Ascolta nuovi messaggi in tempo reale (anche le risposte di Giacomino)
+      onChildAdded(messagesRef, (snapshot) => {
+        const msg = snapshot.val();
+        // Evita di ridisegnare messaggi già mostrati
+        if (msg && !document.getElementById('msg-' + snapshot.key)) {
+          renderMessage(msg.sender, msg.text, msg.time, snapshot.key);
+        }
+      });
+
+      console.log('[Giacomino] Firebase connesso ✓');
+      USE_FIREBASE = true;
+    } catch (err) {
+      console.warn('[Giacomino] Firebase non disponibile, uso modalità locale:', err.message);
+      USE_FIREBASE = false;
+    }
+  }
+
+  /**
+   * Invia un messaggio su Firebase o in locale
+   */
+  async function sendToFirebase(sender, text) {
+    if (!USE_FIREBASE || !messagesRef) return;
+    try {
+      const { push } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+      await push(messagesRef, {
+        sender,
+        text,
+        time: new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }),
+        sessionId: SESSION_ID,
+        timestamp: Date.now()
+      });
+    } catch (err) {
+      console.warn('[Giacomino] Errore invio Firebase:', err.message);
+    }
+  }
+
+  // ── Risposte automatiche del robottino (modalità offline) ────
+  const AUTO_REPLIES = [
+    "Ho ricevuto il tuo messaggino! Giacomino lo leggerà tra le 16 e le 17. Nel frattempo, hai provato a spegnere e riaccendere? 🔌",
+    "Ottimo problemino! Giacomino sta prendendo nota. Risposta garantita entro le 17:00. Tienitelo per stasera! 💾",
+    "Messaggio ricevuto con successo dal Robottino v2.4! Giacomino interverrà presto. Nel dubbio, soffia nella ventolina. 🌬️",
+    "Capito capito! Giacomino ha letto (tra le 16 e le 17, fidati). Nel frattempo: il cavo è attaccato? Chiedere non costa niente. 🖥️",
+    "Problemino registrato nel database sacro di Giacomino. Torna dopo le 16 per la risposta definitiva. Forza! 💪"
+  ];
+
+  let autoReplyIndex = 0;
+
+  /**
+   * Disegna un messaggio nella chat
+   */
+  function renderMessage(sender, text, time, id = null) {
+    const isBot   = sender === 'bot' || sender === 'giacomino';
+    const msgDiv  = document.createElement('div');
+    msgDiv.classList.add('msg', isBot ? 'bot' : 'user');
+    if (id) msgDiv.id = 'msg-' + id;
+
+    const timeStr = time || new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    const nameStr = isBot ? 'Robottino 🤖' : 'Tu';
+
+    msgDiv.innerHTML = `
+      <div class="msg-name">${nameStr}</div>
+      <div class="msg-bubble">${escapeHtml(text)}</div>
+      <div class="msg-time">${timeStr}</div>
+    `;
+
+    messagesEl.appendChild(msgDiv);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  /**
+   * Simula il typing indicator, poi risponde
+   */
+  function showTypingThenReply(text, delay = 1500) {
+    typingEl.classList.add('show');
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    setTimeout(() => {
+      typingEl.classList.remove('show');
+      renderMessage('bot', text);
+      sendToFirebase('bot', text);
+    }, delay);
+  }
+
+  /**
+   * Gestisce l'invio di un messaggio da parte dell'utente
+   */
+  function handleSend() {
+    const text = inputEl.value.trim();
+    if (!text) return;
+
+    // Mostra il messaggio utente
+    renderMessage('user', text);
+    sendToFirebase('user', text);
+
+    // Svuota input
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+
+    // Rispondi automaticamente se non c'è Firebase attivo
+    if (!USE_FIREBASE) {
+      const reply = AUTO_REPLIES[autoReplyIndex % AUTO_REPLIES.length];
+      autoReplyIndex++;
+      showTypingThenReply(reply, 1200 + Math.random() * 800);
+    }
+    // Se USE_FIREBASE è true, le risposte di Giacomino arrivano
+    // automaticamente tramite onChildAdded (vedi initFirebase)
+  }
+
+  /**
+   * Escape HTML basilare per sicurezza
+   */
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // ── Event listeners chat ──────────────────────────────────────
+  sendBtn.addEventListener('click', handleSend);
+
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+
+  // Auto-resize textarea
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px';
+  });
+
+  // ── Messaggio di benvenuto ────────────────────────────────────
+  function showWelcome() {
+    // Piccolo delay per effetto "sta scrivendo"
+    typingEl.classList.add('show');
+    setTimeout(() => {
+      typingEl.classList.remove('show');
+      renderMessage('bot',
+        'scrivi al mio robottino e spiega bene il tuo problemino, (risposte fra le 4 e le 5). ' +
+        'Giacomino legge tutto con molta attenzione e risponde personalmente! 🖥️'
+      );
+    }, 900);
+  }
+
+  // ── Avvio ─────────────────────────────────────────────────────
+  // Prima mostra il benvenuto, poi prova Firebase
+  showWelcome();
+  if (USE_FIREBASE) {
+    initFirebase();
+  }
+
+
+/* ================================================================
+   SEZIONE 2 — COUNTER ANIMATI (stats bar)
+   ================================================================ */
+  function animateCounters() {
+    document.querySelectorAll('[data-target]').forEach(el => {
+      const target = parseInt(el.dataset.target, 10);
+      const suffix = el.dataset.suffix || '';
+      const duration = 1800;
+      const step = 16;
+      const increment = target / (duration / step);
+      let current = 0;
+
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          current = target;
+          clearInterval(timer);
+        }
+        el.textContent = Math.floor(current).toLocaleString('it-IT') + suffix;
+      }, step);
+    });
+  }
+
+  // Lancia i counter quando la stats bar è visibile
+  const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animateCounters();
+        statsObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+
+  const statsBar = document.querySelector('.stats-bar');
+  if (statsBar) statsObserver.observe(statsBar);
+
+
+/* ================================================================
+   SEZIONE 3 — TIMELINE (animazione scroll)
+   ================================================================ */
+  const tlObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.tl-item').forEach(el => tlObserver.observe(el));
+
+
+/* ================================================================
+   SEZIONE 4 — EASTER EGG Konami Code
+   ================================================================ */
+  const KONAMI = [38,38,40,40,37,39,37,39,66,65];
+  let konamiProgress = 0;
+
+  document.addEventListener('keydown', (e) => {
+    if (e.keyCode === KONAMI[konamiProgress]) {
+      konamiProgress++;
+      if (konamiProgress === KONAMI.length) {
+        konamiProgress = 0;
+        showTypingThenReply(
+          '🎮 CODICE SEGRETO INSERITO! Hai sbloccato il Turbo Mode di Giacomino. ' +
+          'Il tuo computerino ora va al 200%. Non è vero, ma Giacomino è fiero di te.',
+          600
+        );
+      }
+    } else {
+      konamiProgress = 0;
+    }
+  });
+
+</script>
+
+</body>
+</html>
