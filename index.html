@@ -394,11 +394,12 @@
   const typingEl   = document.getElementById('typingIndicator');
 
   // ── Carica messaggi ed ascolta i nuovi ───────────────────────────
-  // Strategia: get() carica tutta la storia esistente in una volta,
-  // poi onChildAdded ascolta solo i messaggi aggiunti DA QUESTO MOMENTO.
-  // Il Set shownKeys impedisce qualsiasi duplicato, qualunque sia il nome
-  // della chiave (chiave1, chiave2, -Nxyz, ecc.).
+  // Strategia: prima registriamo onChildAdded (che accumula i messaggi
+  // in una coda senza mostrarli), poi get() carica la storia, poi
+  // svuotiamo la coda mostrando solo i messaggi non ancora visti.
+  // Così funziona in tempo reale E al reload, con qualsiasi nome di chiave.
   const shownKeys = new Set();
+  const pendingSnaps = [];
   let historyLoaded = false;
 
   function showMsg(snap) {
@@ -408,19 +409,26 @@
     if (msg) renderMessage(msg.sender, msg.text, msg.time, snap.key);
   }
 
-  // 1) Carica tutta la storia esistente in una volta con get()
+  // 1) Registra subito il listener: i messaggi che arrivano prima che
+  //    la storia sia caricata vengono messi in coda.
+  onChildAdded(messagesRef, (snapshot) => {
+    if (!historyLoaded) {
+      pendingSnaps.push(snapshot);  // accoda, non mostrare ancora
+    } else {
+      showMsg(snapshot);            // storia già caricata: mostra subito
+    }
+  });
+
+  // 2) Carica tutta la storia esistente con get()
   const existing = await get(messagesRef);
   if (existing.exists()) {
     existing.forEach((snap) => showMsg(snap));
   }
   historyLoaded = true;
 
-  // 2) onChildAdded parte DOPO get(), quindi firing solo per i messaggi
-  //    nuovi aggiunti d'ora in poi. Il Set blocca comunque i duplicati
-  //    nel caso Firebase ri-emetta qualcosa di già visto.
-  onChildAdded(messagesRef, (snapshot) => {
-    if (historyLoaded) showMsg(snapshot);
-  });
+  // 3) Svuota la coda: mostra solo i messaggi arrivati in tempo reale
+  //    che non erano già nella storia (il Set li filtra automaticamente)
+  pendingSnaps.forEach((snap) => showMsg(snap));
 
   // ── Risposte automatiche (mentre sei offline) ────────────────
   const AUTO_REPLIES = [
