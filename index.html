@@ -445,8 +445,7 @@
     const t = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
     // Salva su Firebase → verrà disegnato da onChildAdded
     push(messagesRef, { sender: 'user', text, time: t, sessionId: SESSION_ID, timestamp: Date.now() });
-    // Risposta automatica del robottino
-    autoReply();
+    // Nessuna risposta automatica: rispondi tu manualmente da Firebase Console
   }
 
   // ── Escape HTML ──────────────────────────────────────────────
