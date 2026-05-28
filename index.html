@@ -360,7 +360,7 @@
   // ── Importa Firebase direttamente dai CDN di Google ──────────
   // (questo è l'unico modo corretto in una pagina HTML statica)
   import { initializeApp }                        from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-  import { getDatabase, ref, push, onChildAdded, get, query, orderByKey, startAfter } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+  import { getDatabase, ref, push, onChildAdded, get } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
   // ── Configurazione Firebase (i tuoi dati reali) ──────────────
   const firebaseConfig = {
@@ -394,10 +394,12 @@
   const typingEl   = document.getElementById('typingIndicator');
 
   // ── Carica messaggi ed ascolta i nuovi ───────────────────────────
-  // Usiamo la chiave Firebase (non il timestamp) come unica fonte
-  // di verità: le chiavi sono stringhe ordinate cronologicamente
-  // di default, quindi non serve nessun campo timestamp.
+  // Strategia: get() carica tutta la storia esistente in una volta,
+  // poi onChildAdded ascolta solo i messaggi aggiunti DA QUESTO MOMENTO.
+  // Il Set shownKeys impedisce qualsiasi duplicato, qualunque sia il nome
+  // della chiave (chiave1, chiave2, -Nxyz, ecc.).
   const shownKeys = new Set();
+  let historyLoaded = false;
 
   function showMsg(snap) {
     if (shownKeys.has(snap.key)) return;  // già mostrato, skip
@@ -408,21 +410,17 @@
 
   // 1) Carica tutta la storia esistente in una volta con get()
   const existing = await get(messagesRef);
-  let lastKey = null;
   if (existing.exists()) {
-    existing.forEach((snap) => {
-      showMsg(snap);
-      lastKey = snap.key;  // teniamo l'ultima chiave vista
-    });
+    existing.forEach((snap) => showMsg(snap));
   }
+  historyLoaded = true;
 
-  // 2) Ascolta solo i messaggi con chiave > dell'ultima già caricata.
-  //    orderByKey + startAfter(lastKey) è puramente cronologico e non
-  //    dipende dal campo timestamp, quindi funziona sempre.
-  const newMsgsRef = lastKey
-    ? query(messagesRef, orderByKey(), startAfter(lastKey))
-    : query(messagesRef, orderByKey(), startAfter('~'));  // nessun messaggio ancora: ascolta tutto il futuro
-  onChildAdded(newMsgsRef, (snapshot) => showMsg(snapshot));
+  // 2) onChildAdded parte DOPO get(), quindi firing solo per i messaggi
+  //    nuovi aggiunti d'ora in poi. Il Set blocca comunque i duplicati
+  //    nel caso Firebase ri-emetta qualcosa di già visto.
+  onChildAdded(messagesRef, (snapshot) => {
+    if (historyLoaded) showMsg(snapshot);
+  });
 
   // ── Risposte automatiche (mentre sei offline) ────────────────
   const AUTO_REPLIES = [
