@@ -372,8 +372,14 @@
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
 
-  // ── ID sessione univoco per questa conversazione ─────────────
-  const SESSION_ID = 'session_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  // ── ID sessione: recupera dal localStorage o creane uno nuovo ─
+  // Così dopo un refresh la chat ricarica la stessa conversazione
+  let SESSION_ID = localStorage.getItem('giacomino_session_id');
+  if (!SESSION_ID) {
+    SESSION_ID = 'session_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    localStorage.setItem('giacomino_session_id', SESSION_ID);
+  }
+  const isReturningUser = localStorage.getItem('giacomino_welcomed') === '1';
   const messagesRef = ref(db, 'chats/' + SESSION_ID + '/messages');
 
   // ── Riferimenti DOM ──────────────────────────────────────────
@@ -454,48 +460,71 @@
   inputEl.addEventListener('input',   () => { inputEl.style.height = 'auto'; inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px'; });
 
   // ── Messaggio di benvenuto ────────────────────────────────────
-  typingEl.classList.add('show');
-  setTimeout(() => {
-    typingEl.classList.remove('show');
-    renderMessage('bot', 'scrivi al mio robottino e spiega bene il tuo problemino, (risposte fra le 4 e le 5). Giacomino legge tutto con molta attenzione e risponde personalmente! 🖥️');
-  }, 900);
+  // Al primo caricamento mostra il benvenuto; ai reload la chat
+  // si ricarica già da Firebase tramite onChildAdded, quindi skip.
+  if (!isReturningUser) {
+    typingEl.classList.add('show');
+    setTimeout(() => {
+      typingEl.classList.remove('show');
+      renderMessage('bot', 'scrivi al mio robottino e spiega bene il tuo problemino, (risposte fra le 4 e le 5). Giacomino legge tutto con molta attenzione e risponde personalmente! 🖥️');
+      localStorage.setItem('giacomino_welcomed', '1');
+    }, 900);
+  }
 
+</script>
+
+<!--
+  Script separato (NON module) per counter, timeline e konami.
+  Gira indipendentemente da Firebase: anche se Firebase fallisce,
+  questi continuano a funzionare.
+-->
+<script>
   // ── Counter animati (stats bar) ──────────────────────────────
   function animateCounters() {
-    document.querySelectorAll('[data-target]').forEach(el => {
-      const target = parseInt(el.dataset.target, 10);
-      const suffix = el.dataset.suffix || '';
-      let current = 0;
-      const inc = target / (1800 / 16);
-      const timer = setInterval(() => {
+    document.querySelectorAll('[data-target]').forEach(function(el) {
+      var target = parseInt(el.dataset.target, 10);
+      var suffix = el.dataset.suffix || '';
+      var current = 0;
+      var inc = target / (1800 / 16);
+      var timer = setInterval(function() {
         current += inc;
         if (current >= target) { current = target; clearInterval(timer); }
         el.textContent = Math.floor(current).toLocaleString('it-IT') + suffix;
       }, 16);
     });
   }
-  new IntersectionObserver((entries, obs) => {
-    entries.forEach(e => { if (e.isIntersecting) { animateCounters(); obs.disconnect(); } });
-  }, { threshold: 0.3 }).observe(document.querySelector('.stats-bar'));
+
+  var statsBar = document.querySelector('.stats-bar');
+  if (statsBar) {
+    new IntersectionObserver(function(entries, obs) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) { animateCounters(); obs.disconnect(); }
+      });
+    }, { threshold: 0.3 }).observe(statsBar);
+  }
 
   // ── Timeline scroll animation ────────────────────────────────
-  const tlObs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  var tlObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
   }, { threshold: 0.15 });
-  document.querySelectorAll('.tl-item').forEach(el => tlObs.observe(el));
+  document.querySelectorAll('.tl-item').forEach(function(el) { tlObs.observe(el); });
 
   // ── Easter egg Konami Code ────────────────────────────────────
-  const KONAMI = [38,38,40,40,37,39,37,39,66,65];
-  let kp = 0;
-  document.addEventListener('keydown', e => {
+  var KONAMI = [38,38,40,40,37,39,37,39,66,65];
+  var kp = 0;
+  document.addEventListener('keydown', function(e) {
     kp = (e.keyCode === KONAMI[kp]) ? kp + 1 : 0;
     if (kp === KONAMI.length) {
       kp = 0;
-      typingEl.classList.add('show');
-      setTimeout(() => {
-        typingEl.classList.remove('show');
-        renderMessage('bot', '🎮 CODICE SEGRETO INSERITO! Hai sbloccato il Turbo Mode di Giacomino. Il tuo computerino ora va al 200%. Non è vero, ma Giacomino è fiero di te.');
-      }, 600);
+      var typingEl2 = document.getElementById('typingIndicator');
+      if (typingEl2) {
+        typingEl2.classList.add('show');
+        setTimeout(function() {
+          typingEl2.classList.remove('show');
+        }, 600);
+      }
     }
   });
 </script>
