@@ -355,7 +355,7 @@
   // ── Importa Firebase direttamente dai CDN di Google ──────────
   // (questo è l'unico modo corretto in una pagina HTML statica)
   import { initializeApp }                        from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-  import { getDatabase, ref, push, onChildAdded } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+  import { getDatabase, ref, push, onChildAdded, get, query, orderByChild, startAfter } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
   // ── Configurazione Firebase (i tuoi dati reali) ──────────────
   const firebaseConfig = {
@@ -388,10 +388,25 @@
   const sendBtn    = document.getElementById('chatSendBtn');
   const typingEl   = document.getElementById('typingIndicator');
 
-  // ── Ascolta messaggi in tempo reale (anche le tue risposte!) ─
-  // Ogni volta che tu aggiungi un nodo su Firebase Console,
-  // appare automaticamente nella chat del tuo amico.
-  onChildAdded(messagesRef, (snapshot) => {
+  // ── Carica messaggi esistenti, poi ascolta solo i nuovi ───────
+  // get() carica la storia esistente una volta sola al reload.
+  // onChildAdded con startAfter ascolta solo i messaggi nuovi,
+  // così non riappaiono le vecchie risposte automatiche.
+  const existing = await get(messagesRef);
+  let lastTimestamp = 0;
+  if (existing.exists()) {
+    existing.forEach((snap) => {
+      const msg = snap.val();
+      if (msg) {
+        renderMessage(msg.sender, msg.text, msg.time, snap.key);
+        if (msg.timestamp && msg.timestamp > lastTimestamp) lastTimestamp = msg.timestamp;
+      }
+    });
+  }
+
+  // Ascolta solo messaggi con timestamp maggiore dell'ultimo già caricato
+  const newMsgsRef = query(messagesRef, orderByChild('timestamp'), startAfter(lastTimestamp || Date.now()));
+  onChildAdded(newMsgsRef, (snapshot) => {
     const msg = snapshot.val();
     if (msg && !document.getElementById('msg-' + snapshot.key)) {
       renderMessage(msg.sender, msg.text, msg.time, snapshot.key);
