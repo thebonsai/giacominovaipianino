@@ -331,6 +331,11 @@
       </div>
     </div>
     <p class="chat-note">⏰ risposte garantite fra le 16:00 e le 17:00 · powered by Giacomino™</p>
+    <p style="text-align:center;margin-top:8px;">
+      <button id="newChatBtn" style="background:transparent;border:none;color:var(--text-dim);font-family:'Courier Prime',monospace;font-size:0.62rem;letter-spacing:1px;cursor:pointer;opacity:0.4;text-transform:uppercase;">
+        ↺ nuova chat
+      </button>
+    </p>
   </div>
 </section>
 
@@ -389,29 +394,28 @@
   const typingEl   = document.getElementById('typingIndicator');
 
   // ── Carica messaggi esistenti, poi ascolta solo i nuovi ───────
-  // get() carica la storia esistente una volta sola al reload.
-  // onChildAdded con startAfter ascolta solo i messaggi nuovi,
-  // così non riappaiono le vecchie risposte automatiche.
-  const existing = await get(messagesRef);
-  let lastTimestamp = 0;
-  if (existing.exists()) {
-    existing.forEach((snap) => {
-      const msg = snap.val();
-      if (msg) {
-        renderMessage(msg.sender, msg.text, msg.time, snap.key);
-        if (msg.timestamp && msg.timestamp > lastTimestamp) lastTimestamp = msg.timestamp;
-      }
-    });
+  // Teniamo un Set con le chiavi già mostrate: è il modo più robusto
+  // per evitare duplicati, indipendentemente dai timestamp.
+  const shownKeys = new Set();
+
+  function showMsg(snap) {
+    if (shownKeys.has(snap.key)) return;   // già mostrato, skip
+    shownKeys.add(snap.key);
+    const msg = snap.val();
+    if (msg) renderMessage(msg.sender, msg.text, msg.time, snap.key);
   }
 
-  // Ascolta solo messaggi con timestamp maggiore dell'ultimo già caricato
-  const newMsgsRef = query(messagesRef, orderByChild('timestamp'), startAfter(lastTimestamp || Date.now()));
-  onChildAdded(newMsgsRef, (snapshot) => {
-    const msg = snapshot.val();
-    if (msg && !document.getElementById('msg-' + snapshot.key)) {
-      renderMessage(msg.sender, msg.text, msg.time, snapshot.key);
-    }
-  });
+  // 1) Carica tutta la storia esistente in una volta
+  const existing = await get(messagesRef);
+  if (existing.exists()) {
+    existing.forEach((snap) => showMsg(snap));
+  }
+
+  // 2) Da ora in poi ascolta solo i messaggi nuovi (timestamp > adesso)
+  //    startAfter(Date.now()) esclude tutto ciò che era già su Firebase.
+  //    Il Set shownKeys fa da secondo strato di sicurezza.
+  const newMsgsRef = query(messagesRef, orderByChild('timestamp'), startAfter(Date.now()));
+  onChildAdded(newMsgsRef, (snapshot) => showMsg(snapshot));
 
   // ── Risposte automatiche (mentre sei offline) ────────────────
   const AUTO_REPLIES = [
@@ -472,6 +476,16 @@
   sendBtn.addEventListener('click', handleSend);
   inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
   inputEl.addEventListener('input',   () => { inputEl.style.height = 'auto'; inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px'; });
+
+  // ── Pulsante 'nuova chat' ──────────────────────────────────────
+  // Cancella localStorage e ricarica: nuova SESSION_ID, nuova chat.
+  document.getElementById('newChatBtn')?.addEventListener('click', () => {
+    if (confirm('↺ Vuoi iniziare una nuova chat?\nLa conversazione attuale resterà su Firebase ma non sarà più visibile qui.')) {
+      localStorage.removeItem('giacomino_session_id');
+      localStorage.removeItem('giacomino_welcomed');
+      location.reload();
+    }
+  });
 
   // ── Messaggio di benvenuto ────────────────────────────────────
   // Al primo caricamento mostra il benvenuto; ai reload la chat
